@@ -1,0 +1,19 @@
+﻿category,feature,definition,availability,recommended_for
+identifier,game_id,KBL 경기 고유키,known,all
+label,y_home_win,목표 경기 홈팀 승리=1,target,all
+context,rest_days_capped14,"직전 경기 후 휴식일, 최대 14일",pregame,all
+context,back_to_back,직전 경기 다음 날 경기 여부,pregame,all
+context,long_break,직전 경기 후 30일 초과 여부,pregame,all
+form,win_streak_before,목표 경기 전 연승 길이,pregame,all
+form,loss_streak_before,목표 경기 전 연패 길이,pregame,all
+four_factors,efg_pct,(FGM + 0.5×3PM) / FGA,postgame_history,all
+four_factors,tov_pct,TO / (FGA + 0.44×FTA + TO),postgame_history,all
+four_factors,oreb_pct,ORB / (ORB + 상대 DRB),postgame_history,all
+four_factors,fta_rate,FTA / FGA,postgame_history,all
+rolling,rolling_*_3/5/10,목표 경기 이전 3·5·10경기 평균,pregame,boosting
+elo,elo_before,목표 경기 시작 전 팀 Elo,pregame,all
+elo,elo_difference,홈팀 경기 전 Elo - 원정팀 경기 전 Elo,pregame,all
+elo,elo_home_win_probability,홈 어드밴티지를 반영한 Elo 홈 승리확률,pregame,all
+season,season_transition,직전 경기와 시즌이 다른 첫 경기 여부,pregame,all
+season,crosses_season_boundary,시퀀스가 이전 시즌 기록을 포함하는지,pregame,sequence
+normalization,*_per40,연장전 보정 40분 환산 스탯,postgame_history,sequence

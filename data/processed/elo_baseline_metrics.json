@@ -1,0 +1,36 @@
+{
+  "configuration": {
+    "initial_rating": 1500.0,
+    "k_factor": 20.0,
+    "home_advantage": 65.0,
+    "offseason_retention": 0.65
+  },
+  "all": {
+    "samples": 540,
+    "accuracy": 0.6166666666666667,
+    "brier_score": 0.2292707509243579,
+    "log_loss": 0.6510915952177914,
+    "home_win_rate": 0.5481481481481482
+  },
+  "train": {
+    "samples": 384,
+    "accuracy": 0.6119791666666666,
+    "brier_score": 0.2303531743980666,
+    "log_loss": 0.6530535746634502,
+    "home_win_rate": 0.5598958333333334
+  },
+  "validation": {
+    "samples": 78,
+    "accuracy": 0.6153846153846154,
+    "brier_score": 0.2229893253394858,
+    "log_loss": 0.6344423825507112,
+    "home_win_rate": 0.5128205128205128
+  },
+  "test": {
+    "samples": 78,
+    "accuracy": 0.6410256410256411,
+    "brier_score": 0.23022332248481794,
+    "log_loss": 0.658081832152397,
+    "home_win_rate": 0.5256410256410257
+  }
+}

@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Local configuration and secrets
+.env
+.env.*
+
+# Node.js temporary dependencies
+node_modules/
+
+# Raw KBL API cache is distributed as a GitHub Release asset
+data/raw/
+release_assets/
+
+# Workbook build/inspection artifacts
+*.inspect.ndjson
+preview_*.png
+workbook_payload.json
+
+# Editor and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log

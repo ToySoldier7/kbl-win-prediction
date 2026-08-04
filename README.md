@@ -44,6 +44,24 @@ pip install -r requirements.txt
 git switch -c feature/모델이름
 ```
 
+## 통계 분석 및 시각화
+
+540경기의 승리팀과 패배팀을 대응쌍으로 구성해 분포, 승패 차이 검정, 효과크기, 상관관계,
+VIF, PCA, 팀별 이동평균을 분석합니다.
+
+```powershell
+python scripts/run_statistical_analysis.py --rolling-window 5
+```
+
+- 핵심 해석: [`analysis/statistical_analysis_report.md`](analysis/statistical_analysis_report.md)
+- 통계 결과 CSV: [`analysis/results/`](analysis/results/)
+- 발표용 PNG 그래프: [`analysis/figures/`](analysis/figures/)
+- 분석 설계와 주의사항: [`analysis/README.md`](analysis/README.md)
+
+승리팀과 패배팀은 같은 경기에서 나온 두 관측치이므로 독립표본 검정이 아니라 대응표본 t-검정 또는
+Wilcoxon 부호순위 검정을 사용합니다. 여러 스탯을 동시에 검정할 때는 Benjamini-Hochberg FDR 보정
+p-value와 효과크기를 함께 확인합니다.
+
 ## 실행
 
 Python 3.10 이상에서:

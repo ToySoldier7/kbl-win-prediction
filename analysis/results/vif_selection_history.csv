@@ -1,0 +1,6 @@
+﻿step,removed_feature,removed_feature_label,vif_at_removal,remaining_after_removal
+1,turnovers_per40,턴오버(40분),214.49581474895626,17
+2,efg_pct,eFG%,118.39337900462202,16
+3,offensive_rating,공격 효율,44.23198826711719,15
+4,points_per40,득점(40분),15.222123711911118,14
+5,off_rebounds_per40,공격리바운드(40분),14.221596476847278,13

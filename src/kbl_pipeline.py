@@ -29,10 +29,38 @@ ELO_K_FACTOR = 20.0
 ELO_HOME_ADVANTAGE = 65.0
 ELO_OFFSEASON_RETENTION = 0.65
 
-SEASONS = (
-    {"name": "2023-2024", "slug": "2023_2024", "from": "20231001", "to": "20240630"},
-    {"name": "2024-2025", "slug": "2024_2025", "from": "20241001", "to": "20250630"},
+SEASONS = tuple(
+    {
+        "name": f"{year}-{year + 1}",
+        "slug": f"{year}_{year + 1}",
+        "from": f"{year}0801",
+        "to": f"{year + 1}0630",
+        "expected_games": 213 if year == 2019 else 270,
+    }
+    for year in range(2013, 2025)
 )
+EXPECTED_SEASON_GAMES = {season["name"]: season["expected_games"] for season in SEASONS}
+EXPECTED_TOTAL_GAMES = sum(EXPECTED_SEASON_GAMES.values())
+
+# KBL API 원본 팀 코드는 보존하되, 구단 인수·재창단으로 코드가 바뀐 계보를
+# 장기 시계열에서 연결하기 위한 분석용 식별자다.
+FRANCHISE_ID_MAP = {
+    "65": "64",  # 인천 전자랜드 -> 대구 한국가스공사
+    "30": "66",  # 고양 오리온 -> 고양 캐롯/데이원 -> 고양 소노
+    "73": "66",
+}
+FRANCHISE_NAMES = {
+    "06": "수원 KT",
+    "10": "울산 현대모비스",
+    "16": "원주 DB",
+    "35": "서울 삼성",
+    "50": "창원 LG",
+    "55": "서울 SK",
+    "60": "부산 KCC",
+    "64": "대구 한국가스공사",
+    "66": "고양 소노",
+    "70": "안양 정관장",
+}
 
 HEADERS = {
     "Channel": "WEB",
@@ -156,6 +184,11 @@ ROLLING_BASE_FEATURES = (
 )
 
 
+def franchise_id(team_code: Any) -> str:
+    code = str(team_code)
+    return FRANCHISE_ID_MAP.get(code, code)
+
+
 @dataclass
 class RateLimiter:
     interval: float = 0.06
@@ -271,8 +304,12 @@ def crawl_all(refresh: bool, max_workers: int) -> list[dict[str, Any]]:
     all_payloads: list[dict[str, Any]] = []
     for season in SEASONS:
         games = get_schedule(season, refresh)
-        if len(games) != 270:
-            raise ValueError(f"{season['name']} 정규리그 경기 수가 270이 아닙니다: {len(games)}")
+        expected_games = int(season["expected_games"])
+        if len(games) != expected_games:
+            raise ValueError(
+                f"{season['name']} 정규리그 경기 수 불일치: "
+                f"기대 {expected_games}, 실제 {len(games)}"
+            )
 
         print(f"[{season['name']}] {len(games)}경기 상세 기록 수집")
         payload_by_key: dict[str, dict[str, Any]] = {}
@@ -329,7 +366,7 @@ def add_pregame_form_features(team_df: pd.DataFrame) -> pd.DataFrame:
     result["win_streak_before"] = 0
     result["loss_streak_before"] = 0
 
-    for _, group in result.groupby("team_code", sort=False):
+    for _, group in result.groupby("franchise_id", sort=False):
         win_streak = 0
         loss_streak = 0
         for index in group.index:
@@ -342,7 +379,7 @@ def add_pregame_form_features(team_df: pd.DataFrame) -> pd.DataFrame:
                 loss_streak += 1
                 win_streak = 0
 
-    grouped = result.groupby("team_code", sort=False)
+    grouped = result.groupby("franchise_id", sort=False)
     for window in ROLLING_WINDOWS:
         for feature in ROLLING_BASE_FEATURES:
             result[f"rolling_{feature}_{window}"] = grouped[feature].transform(
@@ -366,10 +403,10 @@ def add_elo_features(games_df: pd.DataFrame, team_df: pd.DataFrame) -> tuple[pd.
             }
         previous_season = game.season
 
-        home_code = str(game.home_team_code)
-        away_code = str(game.away_team_code)
-        home_before = ratings.get(home_code, ELO_INITIAL)
-        away_before = ratings.get(away_code, ELO_INITIAL)
+        home_franchise = str(game.home_franchise_id)
+        away_franchise = str(game.away_franchise_id)
+        home_before = ratings.get(home_franchise, ELO_INITIAL)
+        away_before = ratings.get(away_franchise, ELO_INITIAL)
         expected_home = 1.0 / (
             1.0 + 10.0 ** ((away_before - (home_before + ELO_HOME_ADVANTAGE)) / 400.0)
         )
@@ -377,8 +414,8 @@ def add_elo_features(games_df: pd.DataFrame, team_df: pd.DataFrame) -> tuple[pd.
         change = ELO_K_FACTOR * (actual_home - expected_home)
         home_after = home_before + change
         away_after = away_before - change
-        ratings[home_code] = home_after
-        ratings[away_code] = away_after
+        ratings[home_franchise] = home_after
+        ratings[away_franchise] = away_after
         elo_rows.append(
             {
                 "game_id": game.game_id,
@@ -450,8 +487,12 @@ def extract_datasets(payloads: Iterable[dict[str, Any]]) -> tuple[pd.DataFrame, 
             "game_date": datetime.strptime(game["gameDate"], "%Y%m%d").date().isoformat(),
             "game_start": game.get("gameStart"),
             "home_team_code": home_code,
+            "home_franchise_id": franchise_id(home_code),
+            "home_franchise_name": FRANCHISE_NAMES.get(franchise_id(home_code), game.get("tnameH")),
             "home_team": game.get("tnameH"),
             "away_team_code": away_code,
+            "away_franchise_id": franchise_id(away_code),
+            "away_franchise_name": FRANCHISE_NAMES.get(franchise_id(away_code), game.get("tnameA")),
             "away_team": game.get("tnameA"),
             "home_score": int(schedule.get("scoreH", records_by_team[home_code].get("score"))),
             "away_score": int(schedule.get("scoreA", records_by_team[away_code].get("score"))),
@@ -488,8 +529,12 @@ def extract_datasets(payloads: Iterable[dict[str, Any]]) -> tuple[pd.DataFrame, 
                 "game_start": game.get("gameStart"),
                 "game_number": game.get("gameNo"),
                 "team_code": team_code,
+                "franchise_id": franchise_id(team_code),
+                "franchise_name": FRANCHISE_NAMES.get(franchise_id(team_code), team_name),
                 "team": team_name,
                 "opponent_code": opponent_code,
+                "opponent_franchise_id": franchise_id(opponent_code),
+                "opponent_franchise_name": FRANCHISE_NAMES.get(franchise_id(opponent_code), opponent_name),
                 "opponent": opponent_name,
                 "is_home": is_home,
                 "overtime": int(ot_periods > 0),
@@ -544,16 +589,16 @@ def extract_datasets(payloads: Iterable[dict[str, Any]]) -> tuple[pd.DataFrame, 
     games_df = pd.DataFrame(game_rows).sort_values(["game_date", "game_start", "game_id"]).reset_index(drop=True)
     team_df = pd.DataFrame(team_rows)
     team_df["game_date"] = pd.to_datetime(team_df["game_date"])
-    team_df = team_df.sort_values(["team_code", "game_date", "game_start", "game_id"]).reset_index(drop=True)
-    team_df["team_game_number"] = team_df.groupby("team_code").cumcount() + 1
-    team_df["season_game_number"] = team_df.groupby(["season", "team_code"]).cumcount() + 1
-    team_df["previous_game_date"] = team_df.groupby("team_code")["game_date"].shift(1)
+    team_df = team_df.sort_values(["franchise_id", "game_date", "game_start", "game_id"]).reset_index(drop=True)
+    team_df["team_game_number"] = team_df.groupby("franchise_id").cumcount() + 1
+    team_df["season_game_number"] = team_df.groupby(["season", "franchise_id"]).cumcount() + 1
+    team_df["previous_game_date"] = team_df.groupby("franchise_id")["game_date"].shift(1)
     team_df["rest_days"] = (team_df["game_date"] - team_df["previous_game_date"]).dt.days
     team_df["rest_days_capped14"] = team_df["rest_days"].clip(upper=14).fillna(7)
     team_df["back_to_back"] = (team_df["rest_days"] == 1).astype(int)
     team_df["long_break"] = (team_df["rest_days"] > 30).astype(int)
     team_df["season_opener"] = (team_df["season_game_number"] == 1).astype(int)
-    team_df["previous_season"] = team_df.groupby("team_code")["season"].shift(1)
+    team_df["previous_season"] = team_df.groupby("franchise_id")["season"].shift(1)
     team_df["season_transition"] = (
         team_df["previous_season"].notna() & (team_df["previous_season"] != team_df["season"])
     ).astype(int)
@@ -564,8 +609,31 @@ def extract_datasets(payloads: Iterable[dict[str, Any]]) -> tuple[pd.DataFrame, 
 
 
 def chronological_split(
-    target_dates: list[str], reference_dates: list[str] | None = None
+    target_dates: list[str],
+    reference_dates: list[str] | None = None,
+    target_seasons: list[str] | None = None,
+    reference_seasons: list[str] | None = None,
 ) -> tuple[np.ndarray, str, str]:
+    if target_seasons is not None and reference_seasons is not None:
+        reference = pd.DataFrame(
+            {"season": reference_seasons, "date": reference_dates or target_dates}
+        ).sort_values("date")
+        season_order = reference.drop_duplicates("season")["season"].astype(str).tolist()
+        if len(season_order) >= 3:
+            train_count = max(1, int(len(season_order) * 0.70))
+            validation_end_count = max(train_count + 1, int(len(season_order) * 0.85))
+            validation_end_count = min(validation_end_count, len(season_order) - 1)
+            season_to_split = {
+                season: 0 if index < train_count else 1 if index < validation_end_count else 2
+                for index, season in enumerate(season_order)
+            }
+            split = np.asarray([season_to_split[str(season)] for season in target_seasons], dtype=np.uint8)
+            train_seasons = set(season_order[:train_count])
+            validation_seasons = set(season_order[:validation_end_count])
+            train_end = str(reference.loc[reference["season"].isin(train_seasons), "date"].max())
+            val_end = str(reference.loc[reference["season"].isin(validation_seasons), "date"].max())
+            return split, train_end, val_end
+
     unique_dates = sorted(set(reference_dates or target_dates))
     train_idx = max(1, int(len(unique_dates) * 0.70))
     val_idx = max(train_idx + 1, int(len(unique_dates) * 0.85))
@@ -595,12 +663,12 @@ def build_sequences(
 ) -> pd.DataFrame:
     if mode not in {"carryover", "season_reset"}:
         raise ValueError(f"지원하지 않는 시퀀스 모드: {mode}")
-    ordered = team_df.sort_values(["team_code", "game_date", "game_start", "game_id"]).reset_index(drop=True)
+    ordered = team_df.sort_values(["franchise_id", "game_date", "game_start", "game_id"]).reset_index(drop=True)
     histories: dict[Any, pd.DataFrame] = {}
     grouped_histories = (
-        ordered.groupby("team_code", sort=False)
+        ordered.groupby("franchise_id", sort=False)
         if mode == "carryover"
-        else ordered.groupby(["season", "team_code"], sort=False)
+        else ordered.groupby(["season", "franchise_id"], sort=False)
     )
     for key, group in grouped_histories:
         normalized_key = str(key) if mode == "carryover" else (str(key[0]), str(key[1]))
@@ -621,8 +689,10 @@ def build_sequences(
     for game in games_df.sort_values(["game_date", "game_start", "game_id"]).itertuples(index=False):
         home_code = str(game.home_team_code)
         away_code = str(game.away_team_code)
-        home_key: Any = home_code if mode == "carryover" else (str(game.season), home_code)
-        away_key: Any = away_code if mode == "carryover" else (str(game.season), away_code)
+        home_franchise = str(game.home_franchise_id)
+        away_franchise = str(game.away_franchise_id)
+        home_key: Any = home_franchise if mode == "carryover" else (str(game.season), home_franchise)
+        away_key: Any = away_franchise if mode == "carryover" else (str(game.season), away_franchise)
         home_position = positions[(game.game_id, home_code)]
         away_position = positions[(game.game_id, away_code)]
         if home_position < window or away_position < window:
@@ -686,7 +756,10 @@ def build_sequences(
 
     metadata = pd.DataFrame(metadata_rows)
     split, train_end, val_end = chronological_split(
-        metadata["target_date"].tolist(), games_df["game_date"].astype(str).tolist()
+        metadata["target_date"].tolist(),
+        games_df["game_date"].astype(str).tolist(),
+        metadata["season"].astype(str).tolist(),
+        games_df["season"].astype(str).tolist(),
     )
     metadata["split"] = np.choose(split, ["train", "validation", "test"])
     metadata["train_end_date"] = train_end
@@ -783,7 +856,10 @@ def build_pregame_model_features(team_df: pd.DataFrame, games_df: pd.DataFrame) 
 
     frame = pd.DataFrame(rows)
     split, train_end, val_end = chronological_split(
-        frame["game_date"].astype(str).tolist(), games_df["game_date"].astype(str).tolist()
+        frame["game_date"].astype(str).tolist(),
+        games_df["game_date"].astype(str).tolist(),
+        frame["season"].astype(str).tolist(),
+        games_df["season"].astype(str).tolist(),
     )
     frame["split"] = np.choose(split, ["train", "validation", "test"])
     frame["train_end_date"] = train_end
@@ -840,6 +916,14 @@ def evaluate_elo_baseline(pregame_df: pd.DataFrame) -> dict[str, Any]:
 def write_feature_dictionary() -> None:
     rows = [
         ("identifier", "game_id", "KBL 경기 고유키", "known", "all"),
+        ("identifier", "team_code", "해당 시즌 KBL 원본 팀 코드", "known", "all"),
+        (
+            "identifier",
+            "franchise_id",
+            "코드 변경 구단의 장기 시계열을 연결하는 분석용 구단 계보 ID",
+            "known",
+            "sequence",
+        ),
         ("label", "y_home_win", "목표 경기 홈팀 승리=1", "target", "all"),
         ("context", "rest_days_capped14", "직전 경기 후 휴식일, 최대 14일", "pregame", "all"),
         ("context", "back_to_back", "직전 경기 다음 날 경기 여부", "pregame", "all"),
@@ -871,22 +955,50 @@ def validate(
     pregame_df: pd.DataFrame,
     elo_report: dict[str, Any],
 ) -> dict[str, Any]:
-    required_game = ["game_id", "season", "game_date", "home_team_code", "away_team_code", "home_score", "away_score"]
+    required_game = [
+        "game_id",
+        "season",
+        "game_date",
+        "home_team_code",
+        "home_franchise_id",
+        "away_team_code",
+        "away_franchise_id",
+        "home_score",
+        "away_score",
+    ]
     required_team = [
         "game_id",
         "season",
         "game_date",
         "team_code",
+        "franchise_id",
         "opponent_code",
+        "opponent_franchise_id",
         "is_home",
         "points",
         "opp_points",
         "win",
     ]
     season_games = games_df.groupby("season")["game_id"].nunique().astype(int).to_dict()
-    team_season_counts = (
-        team_df.groupby(["season", "team_code"]).size().rename("games").reset_index().to_dict("records")
+    observed_team_counts = team_df.groupby(["season", "team_code"]).size().astype(int).sort_index()
+    scheduled_team_counts = (
+        pd.concat(
+            [
+                games_df[["season", "home_team_code"]].rename(columns={"home_team_code": "team_code"}),
+                games_df[["season", "away_team_code"]].rename(columns={"away_team_code": "team_code"}),
+            ],
+            ignore_index=True,
+        )
+        .groupby(["season", "team_code"])
+        .size()
+        .astype(int)
+        .sort_index()
     )
+    team_count_comparison = pd.concat(
+        [scheduled_team_counts.rename("scheduled_games"), observed_team_counts.rename("games")], axis=1
+    ).fillna(-1)
+    team_count_mismatches = int((team_count_comparison["scheduled_games"] != team_count_comparison["games"]).sum())
+    team_season_counts = observed_team_counts.rename("games").reset_index().to_dict("records")
     per_game_rows = team_df.groupby("game_id").size()
     label_sums = team_df.groupby("game_id")["win"].sum()
     shot_violations = int(
@@ -931,7 +1043,10 @@ def validate(
         "unique_games": int(games_df["game_id"].nunique()),
         "team_game_rows": int(len(team_df)),
         "seasons": season_games,
+        "expected_seasons": EXPECTED_SEASON_GAMES,
+        "expected_total_games": EXPECTED_TOTAL_GAMES,
         "team_season_counts": team_season_counts,
+        "team_schedule_count_mismatches": team_count_mismatches,
         "min_team_games_per_season": int(min(row["games"] for row in team_season_counts)),
         "max_team_games_per_season": int(max(row["games"] for row in team_season_counts)),
         "duplicate_game_rows": int(games_df.duplicated("game_id").sum()),
@@ -964,11 +1079,11 @@ def validate(
         "elo_baseline": elo_report,
     }
     checks = {
-        "total_games_is_540": report["total_games"] == 540,
-        "each_season_is_270": season_games == {"2023-2024": 270, "2024-2025": 270},
-        "each_team_has_54_games": report["min_team_games_per_season"] == 54
-        and report["max_team_games_per_season"] == 54,
-        "team_rows_is_1080": report["team_game_rows"] == 1080,
+        "requested_12_seasons_present": len(season_games) == 12,
+        "total_games_match_expected_3183": report["total_games"] == EXPECTED_TOTAL_GAMES,
+        "season_game_counts_match_expected": season_games == EXPECTED_SEASON_GAMES,
+        "team_game_counts_match_schedule": report["team_schedule_count_mismatches"] == 0,
+        "team_rows_twice_total_games": report["team_game_rows"] == report["total_games"] * 2,
         "no_game_duplicates": report["duplicate_game_rows"] == 0,
         "no_team_game_duplicates": report["duplicate_team_game_rows"] == 0,
         "two_team_rows_per_game": report["games_without_exactly_two_team_rows"] == 0,
@@ -977,7 +1092,7 @@ def validate(
         "scores_reconcile": report["score_mismatches"] == 0,
         "required_values_complete": report["missing_required_game_values"] == 0
         and report["missing_required_team_values"] == 0,
-        "pregame_rows_is_540": report["pregame_model_rows"] == 540,
+        "pregame_rows_match_total_games": report["pregame_model_rows"] == report["total_games"],
         "four_factors_complete": report["four_factor_missing_values"] == 0,
         "no_sequence_date_leakage": report["sequence_date_leaks"] == 0,
         "season_reset_has_no_boundary_crossing": report["reset_boundary_crossings"] == 0,
@@ -1052,7 +1167,9 @@ def make_workbook_payload(
         "game_id",
         "season",
         "game_date",
+        "home_franchise_id",
         "home_team",
+        "away_franchise_id",
         "away_team",
         "home_score",
         "away_score",
@@ -1069,6 +1186,8 @@ def make_workbook_payload(
         "season",
         "game_date",
         "team_code",
+        "franchise_id",
+        "franchise_name",
         "team",
         "opponent",
         "is_home",
@@ -1175,7 +1294,7 @@ def run(args: argparse.Namespace) -> None:
 
     games_df.to_csv(PROCESSED_DIR / "games_raw.csv", index=False, encoding="utf-8-sig")
     team_df.to_csv(PROCESSED_DIR / "team_games.csv", index=False, encoding="utf-8-sig")
-    chronological = team_df.sort_values(["team_code", "game_date", "game_start", "game_id"])
+    chronological = team_df.sort_values(["franchise_id", "game_date", "game_start", "game_id"])
     chronological.to_csv(PROCESSED_DIR / "team_games_chronological.csv", index=False, encoding="utf-8-sig")
 
     pregame_df = build_pregame_model_features(team_df, games_df)
@@ -1205,7 +1324,7 @@ def run(args: argparse.Namespace) -> None:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="KBL 두 시즌 경기 데이터 수집·전처리·시퀀스 생성")
+    parser = argparse.ArgumentParser(description="KBL 2013-14~2024-25 경기 데이터 수집·전처리·시퀀스 생성")
     parser.add_argument("--windows", nargs="+", type=int, default=[3, 5, 10], help="시퀀스 길이 N")
     parser.add_argument("--workers", type=int, default=6, help="동시 요청 수")
     parser.add_argument("--refresh", action="store_true", help="기존 원본 캐시를 무시하고 다시 수집")

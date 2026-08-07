@@ -1,5 +1,7 @@
 ﻿category,feature,definition,availability,recommended_for
 identifier,game_id,KBL 경기 고유키,known,all
+identifier,team_code,해당 시즌 KBL 원본 팀 코드,known,all
+identifier,franchise_id,코드 변경 구단의 장기 시계열을 연결하는 분석용 구단 계보 ID,known,sequence
 label,y_home_win,목표 경기 홈팀 승리=1,target,all
 context,rest_days_capped14,"직전 경기 후 휴식일, 최대 14일",pregame,all
 context,back_to_back,직전 경기 다음 날 경기 여부,pregame,all

@@ -121,12 +121,19 @@ summary.getRange("A4:A10").values = [
   ["N=5 초기화형 시퀀스"],
   ["전체 검사"],
 ];
-summary.getRange("B4").formulas = [[`=COUNTA('경기'!$A$2:$A$${payload.games.length})`]];
-summary.getRange("B5").formulas = [[`=COUNTA('팀경기'!$A$2:$A$${payload.team_games.length})`]];
-summary.getRange("B6").formulas = [[`=COUNTIF('경기'!$H$2:$H$${payload.games.length},">0")`]];
-summary.getRange("B7").formulas = [[`=COUNTA('경기전피처'!$A$2:$A$${payload.pregame.length})`]];
-summary.getRange("B8").formulas = [[`=COUNTA('시퀀스_연결'!$A$2:$A$${payload.sequences_carryover.length})`]];
-summary.getRange("B9").formulas = [[`=COUNTA('시퀀스_초기화'!$A$2:$A$${payload.sequences_reset.length})`]];
+summary.getRange("B4:B9").values = [[
+  payload.report.total_games,
+], [
+  payload.report.team_game_rows,
+], [
+  payload.report.overtime_games,
+], [
+  payload.report.pregame_model_rows,
+], [
+  payload.report.sequence_samples.carryover["5"],
+], [
+  payload.report.sequence_samples.season_reset["5"],
+]];
 summary.getRange("B10").values = [[payload.report.all_checks_passed ? "PASS" : "CHECK"]];
 summary.getRange("A3:B3").format = { fill: blue, font: { bold: true, color: white } };
 summary.getRange("A4:A10").format = { fill: lightBlue, font: { bold: true } };
@@ -134,21 +141,26 @@ summary.getRange("B4:B10").format = { fill: green, font: { bold: true, size: 12 
 
 summary.getRange("A13:D13").values = [["시즌", "실제 경기", "기대 경기", "결과"]];
 const seasonNames = Object.keys(payload.report.seasons);
+const seasonStartRow = 14;
+const seasonEndRow = seasonStartRow + seasonNames.length - 1;
 for (let i = 0; i < seasonNames.length; i += 1) {
-  const row = 14 + i;
+  const row = seasonStartRow + i;
   summary.getRange(`A${row}`).values = [[seasonNames[i]]];
-  summary.getRange(`B${row}`).formulas = [[`=COUNTIF('경기'!$B$2:$B$${payload.games.length},A${row})`]];
-  summary.getRange(`C${row}`).values = [[270]];
+  summary.getRange(`B${row}`).values = [[payload.report.seasons[seasonNames[i]]]];
+  summary.getRange(`C${row}`).values = [[payload.report.expected_seasons[seasonNames[i]]]];
   summary.getRange(`D${row}`).formulas = [[`=IF(B${row}=C${row},"PASS","CHECK")`]];
 }
 summary.getRange("A13:D13").format = { fill: blue, font: { bold: true, color: white } };
-summary.getRange(`D14:D${13 + seasonNames.length}`).format = { fill: green, font: { bold: true } };
+summary.getRange(`D${seasonStartRow}:D${seasonEndRow}`).format = { fill: green, font: { bold: true } };
 
 const checkEntries = Object.entries(payload.report.checks);
-summary.getRange("A19:B19").values = [["품질 검사", "결과"]];
-summary.getRange("A19:B19").format = { fill: blue, font: { bold: true, color: white } };
+const checksHeaderRow = seasonEndRow + 3;
+const checksStartRow = checksHeaderRow + 1;
+const checksEndRow = checksStartRow + checkEntries.length - 1;
+summary.getRange(`A${checksHeaderRow}:B${checksHeaderRow}`).values = [["품질 검사", "결과"]];
+summary.getRange(`A${checksHeaderRow}:B${checksHeaderRow}`).format = { fill: blue, font: { bold: true, color: white } };
 for (let i = 0; i < checkEntries.length; i += 1) {
-  const row = 20 + i;
+  const row = checksStartRow + i;
   summary.getRange(`A${row}:B${row}`).values = [[checkEntries[i][0], checkEntries[i][1] ? "PASS" : "FAIL"]];
   summary.getRange(`B${row}`).format = {
     fill: checkEntries[i][1] ? green : red,
@@ -162,35 +174,38 @@ summary.getRange("D3").values = [["데이터 출처 및 설계"]];
 summary.getRange("D3:F3").format = { fill: blue, font: { bold: true, color: white }, horizontalAlignment: "center" };
 summary.getRange("D4:F8").merge();
 summary.getRange("D4").values = [[
-  "기존 경기 단위 목표는 유지했습니다. Four Factors·연승/연패·이동평균·Elo를 보완했고, 시즌 연결형과 초기화형 시퀀스를 모두 제공합니다. 쿼터 분할은 사용하지 않았습니다.",
+  "2013-14~2024-25 정규리그를 경기 단위로 수집했습니다. Four Factors·연승/연패·이동평균·Elo와 구단 코드 변경을 연결하는 franchise_id를 제공하며, 시즌 연결형과 초기화형 시퀀스를 모두 제공합니다.",
 ]];
 summary.getRange("D4:F8").format = { fill: gray, wrapText: true, verticalAlignment: "top" };
-summary.getRange("D23:F23").merge();
-summary.getRange("D23").values = [["Elo 테스트 기준선"]];
-summary.getRange("D23:F23").format = { fill: blue, font: { bold: true, color: white }, horizontalAlignment: "center" };
-summary.getRange("D24:E27").values = [
+const sourceHeaderRow = checksHeaderRow;
+const eloHeaderRow = checksHeaderRow + 4;
+summary.getRange(`D${eloHeaderRow}:F${eloHeaderRow}`).merge();
+summary.getRange(`D${eloHeaderRow}`).values = [["Elo 테스트 기준선"]];
+summary.getRange(`D${eloHeaderRow}:F${eloHeaderRow}`).format = { fill: blue, font: { bold: true, color: white }, horizontalAlignment: "center" };
+summary.getRange(`D${eloHeaderRow + 1}:E${eloHeaderRow + 4}`).values = [
   ["정확도", payload.report.elo_baseline.test.accuracy],
   ["Brier score", payload.report.elo_baseline.test.brier_score],
   ["Log loss", payload.report.elo_baseline.test.log_loss],
   ["테스트 샘플", payload.report.elo_baseline.test.samples],
 ];
-summary.getRange("D24:D27").format = { fill: lightBlue, font: { bold: true } };
-summary.getRange("E24:E26").format.numberFormat = "0.0000";
-summary.getRange("E24:E27").format = { fill: green, font: { bold: true } };
+summary.getRange(`D${eloHeaderRow + 1}:D${eloHeaderRow + 4}`).format = { fill: lightBlue, font: { bold: true } };
+summary.getRange(`E${eloHeaderRow + 1}:E${eloHeaderRow + 3}`).format.numberFormat = "0.0000";
+summary.getRange(`E${eloHeaderRow + 1}:E${eloHeaderRow + 4}`).format = { fill: green, font: { bold: true } };
 
-summary.getRange("D19:F19").merge();
-summary.getRange("D19").values = [["공식 출처"]];
-summary.getRange("D19:F19").format = { fill: blue, font: { bold: true, color: white }, horizontalAlignment: "center" };
-summary.getRange("D20:F20").merge();
-summary.getRange("D20").values = [["https://www.kbl.or.kr/match/schedule"]];
-summary.getRange("D21:F21").merge();
-summary.getRange("D21").values = [["https://kbl.or.kr/rule/operation"]];
-summary.getRange("D20:F21").format = { fill: gray, font: { color: "#0563C1" } };
-workbook.comments.addThread({ cell: summary.getRange("D20") }, "Source: KBL 공식 일정 및 결과 페이지");
+summary.getRange(`D${sourceHeaderRow}:F${sourceHeaderRow}`).merge();
+summary.getRange(`D${sourceHeaderRow}`).values = [["공식 출처"]];
+summary.getRange(`D${sourceHeaderRow}:F${sourceHeaderRow}`).format = { fill: blue, font: { bold: true, color: white }, horizontalAlignment: "center" };
+summary.getRange(`D${sourceHeaderRow + 1}:F${sourceHeaderRow + 1}`).merge();
+summary.getRange(`D${sourceHeaderRow + 1}`).values = [["https://www.kbl.or.kr/match/schedule"]];
+summary.getRange(`D${sourceHeaderRow + 2}:F${sourceHeaderRow + 2}`).merge();
+summary.getRange(`D${sourceHeaderRow + 2}`).values = [["https://kbl.or.kr/rule/operation"]];
+summary.getRange(`D${sourceHeaderRow + 1}:F${sourceHeaderRow + 2}`).format = { fill: gray, font: { color: "#0563C1" } };
+workbook.comments.addThread({ cell: summary.getRange(`D${sourceHeaderRow + 1}`) }, "Source: KBL 공식 일정 및 결과 페이지");
 
-summary.getRange("A3:F38").format.borders = { preset: "outside", style: "thin", color: border };
-summary.getRange("A1:F38").format.font = { name: "Aptos" };
-  summary.getRange("A:A").format.columnWidthPx = 340;
+const summaryEndRow = Math.max(checksEndRow, eloHeaderRow + 4);
+summary.getRange(`A3:F${summaryEndRow}`).format.borders = { preset: "outside", style: "thin", color: border };
+summary.getRange(`A1:F${summaryEndRow}`).format.font = { name: "Aptos" };
+summary.getRange("A:A").format.columnWidthPx = 340;
 summary.getRange("B:B").format.columnWidthPx = 105;
 summary.getRange("C:C").format.columnWidthPx = 95;
 summary.getRange("D:F").format.columnWidthPx = 125;
@@ -199,9 +214,9 @@ summary.freezePanes.freezeRows(1);
 const inspect = await workbook.inspect({
   kind: "table",
   sheetId: "요약",
-  range: "A1:F38",
+  range: `A1:F${summaryEndRow}`,
   include: "values,formulas",
-  tableMaxRows: 38,
+  tableMaxRows: summaryEndRow,
   tableMaxCols: 6,
   maxChars: 8000,
 });
@@ -215,7 +230,7 @@ const errors = await workbook.inspect({
 console.log(errors.ndjson);
 
 const previews = [
-  ["요약", "A1:F38"],
+  ["요약", `A1:F${summaryEndRow}`],
   ["경기", "A1:N22"],
   ["팀경기", "A1:AF22"],
   ["경기전피처", "A1:S22"],

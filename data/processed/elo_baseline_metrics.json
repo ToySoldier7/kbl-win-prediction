@@ -6,31 +6,31 @@
     "offseason_retention": 0.65
   },
   "all": {
-    "samples": 540,
-    "accuracy": 0.6166666666666667,
-    "brier_score": 0.2292707509243579,
-    "log_loss": 0.6510915952177914,
-    "home_win_rate": 0.5481481481481482
+    "samples": 3183,
+    "accuracy": 0.6173421300659755,
+    "brier_score": 0.23187688829153058,
+    "log_loss": 0.6561965515202806,
+    "home_win_rate": 0.5557650015708451
   },
   "train": {
-    "samples": 384,
-    "accuracy": 0.6119791666666666,
-    "brier_score": 0.2303531743980666,
-    "log_loss": 0.6530535746634502,
-    "home_win_rate": 0.5598958333333334
+    "samples": 2103,
+    "accuracy": 0.6105563480741797,
+    "brier_score": 0.23405544994867455,
+    "log_loss": 0.6610213945953691,
+    "home_win_rate": 0.5592011412268189
   },
   "validation": {
-    "samples": 78,
-    "accuracy": 0.6153846153846154,
-    "brier_score": 0.2229893253394858,
-    "log_loss": 0.6344423825507112,
-    "home_win_rate": 0.5128205128205128
+    "samples": 540,
+    "accuracy": 0.6314814814814815,
+    "brier_score": 0.22698388414334478,
+    "log_loss": 0.6446668560687129,
+    "home_win_rate": 0.55
   },
   "test": {
-    "samples": 78,
-    "accuracy": 0.6410256410256411,
-    "brier_score": 0.23022332248481794,
-    "log_loss": 0.658081832152397,
-    "home_win_rate": 0.5256410256410257
+    "samples": 540,
+    "accuracy": 0.6296296296296297,
+    "brier_score": 0.2282856050971723,
+    "log_loss": 0.6489361636627534,
+    "home_win_rate": 0.5481481481481482
   }
 }

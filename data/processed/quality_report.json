@@ -1,14 +1,539 @@
 {
-  "generated_at": "2026-08-04T18:11:45.130735+09:00",
+  "generated_at": "2026-08-07T22:05:46.035023+09:00",
   "source": "KBL official website API used by https://www.kbl.or.kr/match/schedule",
-  "total_games": 540,
-  "unique_games": 540,
-  "team_game_rows": 1080,
+  "total_games": 3183,
+  "unique_games": 3183,
+  "team_game_rows": 6366,
   "seasons": {
+    "2013-2014": 270,
+    "2014-2015": 270,
+    "2015-2016": 270,
+    "2016-2017": 270,
+    "2017-2018": 270,
+    "2018-2019": 270,
+    "2019-2020": 213,
+    "2020-2021": 270,
+    "2021-2022": 270,
+    "2022-2023": 270,
     "2023-2024": 270,
     "2024-2025": 270
   },
+  "expected_seasons": {
+    "2013-2014": 270,
+    "2014-2015": 270,
+    "2015-2016": 270,
+    "2016-2017": 270,
+    "2017-2018": 270,
+    "2018-2019": 270,
+    "2019-2020": 213,
+    "2020-2021": 270,
+    "2021-2022": 270,
+    "2022-2023": 270,
+    "2023-2024": 270,
+    "2024-2025": 270
+  },
+  "expected_total_games": 3183,
   "team_season_counts": [
+    {
+      "season": "2013-2014",
+      "team_code": "06",
+      "games": 54
+    },
+    {
+      "season": "2013-2014",
+      "team_code": "10",
+      "games": 54
+    },
+    {
+      "season": "2013-2014",
+      "team_code": "16",
+      "games": 54
+    },
+    {
+      "season": "2013-2014",
+      "team_code": "30",
+      "games": 54
+    },
+    {
+      "season": "2013-2014",
+      "team_code": "35",
+      "games": 54
+    },
+    {
+      "season": "2013-2014",
+      "team_code": "50",
+      "games": 54
+    },
+    {
+      "season": "2013-2014",
+      "team_code": "55",
+      "games": 54
+    },
+    {
+      "season": "2013-2014",
+      "team_code": "60",
+      "games": 54
+    },
+    {
+      "season": "2013-2014",
+      "team_code": "65",
+      "games": 54
+    },
+    {
+      "season": "2013-2014",
+      "team_code": "70",
+      "games": 54
+    },
+    {
+      "season": "2014-2015",
+      "team_code": "06",
+      "games": 54
+    },
+    {
+      "season": "2014-2015",
+      "team_code": "10",
+      "games": 54
+    },
+    {
+      "season": "2014-2015",
+      "team_code": "16",
+      "games": 54
+    },
+    {
+      "season": "2014-2015",
+      "team_code": "30",
+      "games": 54
+    },
+    {
+      "season": "2014-2015",
+      "team_code": "35",
+      "games": 54
+    },
+    {
+      "season": "2014-2015",
+      "team_code": "50",
+      "games": 54
+    },
+    {
+      "season": "2014-2015",
+      "team_code": "55",
+      "games": 54
+    },
+    {
+      "season": "2014-2015",
+      "team_code": "60",
+      "games": 54
+    },
+    {
+      "season": "2014-2015",
+      "team_code": "65",
+      "games": 54
+    },
+    {
+      "season": "2014-2015",
+      "team_code": "70",
+      "games": 54
+    },
+    {
+      "season": "2015-2016",
+      "team_code": "06",
+      "games": 54
+    },
+    {
+      "season": "2015-2016",
+      "team_code": "10",
+      "games": 54
+    },
+    {
+      "season": "2015-2016",
+      "team_code": "16",
+      "games": 54
+    },
+    {
+      "season": "2015-2016",
+      "team_code": "30",
+      "games": 54
+    },
+    {
+      "season": "2015-2016",
+      "team_code": "35",
+      "games": 54
+    },
+    {
+      "season": "2015-2016",
+      "team_code": "50",
+      "games": 54
+    },
+    {
+      "season": "2015-2016",
+      "team_code": "55",
+      "games": 54
+    },
+    {
+      "season": "2015-2016",
+      "team_code": "60",
+      "games": 54
+    },
+    {
+      "season": "2015-2016",
+      "team_code": "65",
+      "games": 54
+    },
+    {
+      "season": "2015-2016",
+      "team_code": "70",
+      "games": 54
+    },
+    {
+      "season": "2016-2017",
+      "team_code": "06",
+      "games": 54
+    },
+    {
+      "season": "2016-2017",
+      "team_code": "10",
+      "games": 54
+    },
+    {
+      "season": "2016-2017",
+      "team_code": "16",
+      "games": 54
+    },
+    {
+      "season": "2016-2017",
+      "team_code": "30",
+      "games": 54
+    },
+    {
+      "season": "2016-2017",
+      "team_code": "35",
+      "games": 54
+    },
+    {
+      "season": "2016-2017",
+      "team_code": "50",
+      "games": 54
+    },
+    {
+      "season": "2016-2017",
+      "team_code": "55",
+      "games": 54
+    },
+    {
+      "season": "2016-2017",
+      "team_code": "60",
+      "games": 54
+    },
+    {
+      "season": "2016-2017",
+      "team_code": "65",
+      "games": 54
+    },
+    {
+      "season": "2016-2017",
+      "team_code": "70",
+      "games": 54
+    },
+    {
+      "season": "2017-2018",
+      "team_code": "06",
+      "games": 54
+    },
+    {
+      "season": "2017-2018",
+      "team_code": "10",
+      "games": 54
+    },
+    {
+      "season": "2017-2018",
+      "team_code": "16",
+      "games": 54
+    },
+    {
+      "season": "2017-2018",
+      "team_code": "30",
+      "games": 54
+    },
+    {
+      "season": "2017-2018",
+      "team_code": "35",
+      "games": 54
+    },
+    {
+      "season": "2017-2018",
+      "team_code": "50",
+      "games": 54
+    },
+    {
+      "season": "2017-2018",
+      "team_code": "55",
+      "games": 54
+    },
+    {
+      "season": "2017-2018",
+      "team_code": "60",
+      "games": 54
+    },
+    {
+      "season": "2017-2018",
+      "team_code": "65",
+      "games": 54
+    },
+    {
+      "season": "2017-2018",
+      "team_code": "70",
+      "games": 54
+    },
+    {
+      "season": "2018-2019",
+      "team_code": "06",
+      "games": 54
+    },
+    {
+      "season": "2018-2019",
+      "team_code": "10",
+      "games": 54
+    },
+    {
+      "season": "2018-2019",
+      "team_code": "16",
+      "games": 54
+    },
+    {
+      "season": "2018-2019",
+      "team_code": "30",
+      "games": 54
+    },
+    {
+      "season": "2018-2019",
+      "team_code": "35",
+      "games": 54
+    },
+    {
+      "season": "2018-2019",
+      "team_code": "50",
+      "games": 54
+    },
+    {
+      "season": "2018-2019",
+      "team_code": "55",
+      "games": 54
+    },
+    {
+      "season": "2018-2019",
+      "team_code": "60",
+      "games": 54
+    },
+    {
+      "season": "2018-2019",
+      "team_code": "65",
+      "games": 54
+    },
+    {
+      "season": "2018-2019",
+      "team_code": "70",
+      "games": 54
+    },
+    {
+      "season": "2019-2020",
+      "team_code": "06",
+      "games": 43
+    },
+    {
+      "season": "2019-2020",
+      "team_code": "10",
+      "games": 42
+    },
+    {
+      "season": "2019-2020",
+      "team_code": "16",
+      "games": 43
+    },
+    {
+      "season": "2019-2020",
+      "team_code": "30",
+      "games": 43
+    },
+    {
+      "season": "2019-2020",
+      "team_code": "35",
+      "games": 43
+    },
+    {
+      "season": "2019-2020",
+      "team_code": "50",
+      "games": 42
+    },
+    {
+      "season": "2019-2020",
+      "team_code": "55",
+      "games": 43
+    },
+    {
+      "season": "2019-2020",
+      "team_code": "60",
+      "games": 42
+    },
+    {
+      "season": "2019-2020",
+      "team_code": "65",
+      "games": 42
+    },
+    {
+      "season": "2019-2020",
+      "team_code": "70",
+      "games": 43
+    },
+    {
+      "season": "2020-2021",
+      "team_code": "06",
+      "games": 54
+    },
+    {
+      "season": "2020-2021",
+      "team_code": "10",
+      "games": 54
+    },
+    {
+      "season": "2020-2021",
+      "team_code": "16",
+      "games": 54
+    },
+    {
+      "season": "2020-2021",
+      "team_code": "30",
+      "games": 54
+    },
+    {
+      "season": "2020-2021",
+      "team_code": "35",
+      "games": 54
+    },
+    {
+      "season": "2020-2021",
+      "team_code": "50",
+      "games": 54
+    },
+    {
+      "season": "2020-2021",
+      "team_code": "55",
+      "games": 54
+    },
+    {
+      "season": "2020-2021",
+      "team_code": "60",
+      "games": 54
+    },
+    {
+      "season": "2020-2021",
+      "team_code": "65",
+      "games": 54
+    },
+    {
+      "season": "2020-2021",
+      "team_code": "70",
+      "games": 54
+    },
+    {
+      "season": "2021-2022",
+      "team_code": "06",
+      "games": 54
+    },
+    {
+      "season": "2021-2022",
+      "team_code": "10",
+      "games": 54
+    },
+    {
+      "season": "2021-2022",
+      "team_code": "16",
+      "games": 54
+    },
+    {
+      "season": "2021-2022",
+      "team_code": "30",
+      "games": 54
+    },
+    {
+      "season": "2021-2022",
+      "team_code": "35",
+      "games": 54
+    },
+    {
+      "season": "2021-2022",
+      "team_code": "50",
+      "games": 54
+    },
+    {
+      "season": "2021-2022",
+      "team_code": "55",
+      "games": 54
+    },
+    {
+      "season": "2021-2022",
+      "team_code": "60",
+      "games": 54
+    },
+    {
+      "season": "2021-2022",
+      "team_code": "64",
+      "games": 54
+    },
+    {
+      "season": "2021-2022",
+      "team_code": "70",
+      "games": 54
+    },
+    {
+      "season": "2022-2023",
+      "team_code": "06",
+      "games": 54
+    },
+    {
+      "season": "2022-2023",
+      "team_code": "10",
+      "games": 54
+    },
+    {
+      "season": "2022-2023",
+      "team_code": "16",
+      "games": 54
+    },
+    {
+      "season": "2022-2023",
+      "team_code": "35",
+      "games": 54
+    },
+    {
+      "season": "2022-2023",
+      "team_code": "50",
+      "games": 54
+    },
+    {
+      "season": "2022-2023",
+      "team_code": "55",
+      "games": 54
+    },
+    {
+      "season": "2022-2023",
+      "team_code": "60",
+      "games": 54
+    },
+    {
+      "season": "2022-2023",
+      "team_code": "64",
+      "games": 54
+    },
+    {
+      "season": "2022-2023",
+      "team_code": "70",
+      "games": 54
+    },
+    {
+      "season": "2022-2023",
+      "team_code": "73",
+      "games": 54
+    },
     {
       "season": "2023-2024",
       "team_code": "06",
@@ -110,7 +635,8 @@
       "games": 54
     }
   ],
-  "min_team_games_per_season": 54,
+  "team_schedule_count_mismatches": 0,
+  "min_team_games_per_season": 42,
   "max_team_games_per_season": 54,
   "duplicate_game_rows": 0,
   "duplicate_team_game_rows": 0,
@@ -120,57 +646,57 @@
   "score_mismatches": 0,
   "missing_required_game_values": 0,
   "missing_required_team_values": 0,
-  "overtime_games": 19,
-  "pregame_model_rows": 540,
+  "overtime_games": 148,
+  "pregame_model_rows": 3183,
   "four_factor_missing_values": 0,
   "sequence_date_leaks": 0,
   "reset_boundary_crossings": 0,
   "scaled_sequence_missing_values": 0,
   "sequence_samples": {
     "carryover": {
-      "3": 522,
-      "5": 512,
-      "10": 488
+      "3": 3168,
+      "5": 3156,
+      "10": 3132
     },
     "season_reset": {
-      "3": 505,
-      "5": 485,
-      "10": 436
+      "3": 2984,
+      "5": 2865,
+      "10": 2562
     }
   },
   "sequence_splits": {
     "carryover": {
       "3": {
-        "train": 366,
-        "validation": 78,
-        "test": 78
+        "train": 2088,
+        "validation": 540,
+        "test": 540
       },
       "5": {
-        "train": 356,
-        "validation": 78,
-        "test": 78
+        "train": 2076,
+        "validation": 540,
+        "test": 540
       },
       "10": {
-        "train": 332,
-        "validation": 78,
-        "test": 78
+        "train": 2052,
+        "validation": 540,
+        "test": 540
       }
     },
     "season_reset": {
       "3": {
-        "train": 349,
-        "validation": 78,
-        "test": 78
+        "train": 1971,
+        "validation": 508,
+        "test": 505
       },
       "5": {
-        "train": 329,
-        "validation": 78,
-        "test": 78
+        "train": 1892,
+        "validation": 488,
+        "test": 485
       },
       "10": {
-        "train": 280,
-        "validation": 78,
-        "test": 78
+        "train": 1691,
+        "test": 436,
+        "validation": 435
       }
     }
   },
@@ -182,39 +708,40 @@
       "offseason_retention": 0.65
     },
     "all": {
-      "samples": 540,
-      "accuracy": 0.6166666666666667,
-      "brier_score": 0.2292707509243579,
-      "log_loss": 0.6510915952177914,
-      "home_win_rate": 0.5481481481481482
+      "samples": 3183,
+      "accuracy": 0.6173421300659755,
+      "brier_score": 0.23187688829153058,
+      "log_loss": 0.6561965515202806,
+      "home_win_rate": 0.5557650015708451
     },
     "train": {
-      "samples": 384,
-      "accuracy": 0.6119791666666666,
-      "brier_score": 0.2303531743980666,
-      "log_loss": 0.6530535746634502,
-      "home_win_rate": 0.5598958333333334
+      "samples": 2103,
+      "accuracy": 0.6105563480741797,
+      "brier_score": 0.23405544994867455,
+      "log_loss": 0.6610213945953691,
+      "home_win_rate": 0.5592011412268189
     },
     "validation": {
-      "samples": 78,
-      "accuracy": 0.6153846153846154,
-      "brier_score": 0.2229893253394858,
-      "log_loss": 0.6344423825507112,
-      "home_win_rate": 0.5128205128205128
+      "samples": 540,
+      "accuracy": 0.6314814814814815,
+      "brier_score": 0.22698388414334478,
+      "log_loss": 0.6446668560687129,
+      "home_win_rate": 0.55
     },
     "test": {
-      "samples": 78,
-      "accuracy": 0.6410256410256411,
-      "brier_score": 0.23022332248481794,
-      "log_loss": 0.658081832152397,
-      "home_win_rate": 0.5256410256410257
+      "samples": 540,
+      "accuracy": 0.6296296296296297,
+      "brier_score": 0.2282856050971723,
+      "log_loss": 0.6489361636627534,
+      "home_win_rate": 0.5481481481481482
     }
   },
   "checks": {
-    "total_games_is_540": true,
-    "each_season_is_270": true,
-    "each_team_has_54_games": true,
-    "team_rows_is_1080": true,
+    "requested_12_seasons_present": true,
+    "total_games_match_expected_3183": true,
+    "season_game_counts_match_expected": true,
+    "team_game_counts_match_schedule": true,
+    "team_rows_twice_total_games": true,
     "no_game_duplicates": true,
     "no_team_game_duplicates": true,
     "two_team_rows_per_game": true,
@@ -222,7 +749,7 @@
     "valid_shot_counts": true,
     "scores_reconcile": true,
     "required_values_complete": true,
-    "pregame_rows_is_540": true,
+    "pregame_rows_match_total_games": true,
     "four_factors_complete": true,
     "no_sequence_date_leakage": true,
     "season_reset_has_no_boundary_crossing": true,

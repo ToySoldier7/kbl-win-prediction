@@ -496,40 +496,45 @@ def save_pca_biplot(scores: pd.DataFrame, loadings: pd.DataFrame, variance: pd.D
 
 
 def save_team_momentum(df: pd.DataFrame, window: int, value: str, title: str, ylabel: str, output: Path) -> None:
-    ordered = df.sort_values(["team", "season", "game_date", "game_id"]).copy()
+    ordered = df.sort_values(["franchise_id", "season", "game_date", "game_id"]).copy()
     rolling_col = f"rolling_{value}_{window}_descriptive"
-    ordered[rolling_col] = ordered.groupby(["team", "season"], sort=False)[value].transform(
+    ordered[rolling_col] = ordered.groupby(["franchise_id", "season"], sort=False)[value].transform(
         lambda s: s.rolling(window, min_periods=1).mean()
     )
-    teams = sorted(ordered["team"].unique())
-    seasons = sorted(ordered["season"].unique())
-    season_colors = {seasons[0]: WIN_COLOR, seasons[1]: LOSS_COLOR}
+    franchises = sorted(ordered["franchise_id"].astype(str).unique())
     fig, axes = plt.subplots(5, 2, figsize=(15, 18), sharex=True, sharey=True)
-    for ax, team in zip(axes.flat, teams):
-        team_data = ordered[ordered["team"] == team]
+    for ax, franchise in zip(axes.flat, franchises):
+        team_data = ordered[ordered["franchise_id"].astype(str) == franchise]
+        seasons = team_data.sort_values("game_date")["season"].drop_duplicates().tolist()
         for season in seasons:
             season_data = team_data[team_data["season"] == season]
             ax.plot(
-                season_data["season_game_number"],
+                season_data["game_date"],
                 season_data[rolling_col],
-                color=season_colors[season],
-                linewidth=1.8,
-                label=season,
+                color=WIN_COLOR,
+                linewidth=1.25,
             )
-        ax.set_title(team)
+            ax.axvline(season_data["game_date"].min(), color=GRID_COLOR, linestyle=":", linewidth=0.55)
+        label = team_data.sort_values("game_date").iloc[-1].get("franchise_name", team_data.iloc[-1]["team"])
+        ax.set_title(label)
         ax.grid(color=GRID_COLOR, linewidth=0.6)
-        ax.set_xlim(1, 54)
+    for ax in axes.flat[len(franchises) :]:
+        ax.axis("off")
     if value == "win":
         axes[0, 0].set_ylim(-0.03, 1.03)
     for ax in axes[-1, :]:
-        ax.set_xlabel("시즌 경기 번호")
+        ax.set_xlabel("경기일")
     for ax in axes[:, 0]:
         ax.set_ylabel(ylabel)
-    handles = [plt.Line2D([0], [0], color=season_colors[s], linewidth=2, label=s) for s in seasons]
     fig.suptitle(title, fontsize=19, fontweight="bold", y=0.995)
-    fig.text(0.5, 0.975, f"시즌별 초기화, 현재 경기를 포함한 최근 {window}경기 단순 이동평균", ha="center", color=NEUTRAL)
-    fig.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, 0.958), ncol=len(seasons), frameon=False)
-    fig.tight_layout(rect=[0, 0, 1, 0.94])
+    fig.text(
+        0.5,
+        0.975,
+        f"시즌별 초기화, 현재 경기를 포함한 최근 {window}경기 이동평균 · 점선은 시즌 시작",
+        ha="center",
+        color=NEUTRAL,
+    )
+    fig.tight_layout(rect=[0, 0, 1, 0.955])
     fig.savefig(output, dpi=185)
     plt.close(fig)
 
@@ -548,6 +553,9 @@ def write_report(
     loadings: pd.DataFrame,
     n_80: int,
     rolling_window: int,
+    game_count: int,
+    team_row_count: int,
+    season_count: int,
 ) -> None:
     top = tests.reindex(tests["rank_biserial"].abs().sort_values(ascending=False).index).head(7)
     significant_count = int(tests["significant_fdr_0_05"].sum())
@@ -559,7 +567,7 @@ def write_report(
         "",
         "## 핵심 요약",
         "",
-        f"- 분석 단위는 540경기의 승리팀–패배팀 대응쌍입니다. 팀 경기 행은 1,080개입니다.",
+        f"- 분석 단위는 {game_count:,}경기의 승리팀–패배팀 대응쌍입니다. 팀 경기 행은 {team_row_count:,}개, 시즌은 {season_count}개입니다.",
         f"- 대응차이 정규성을 만족한 {paired_t_count}개 변수는 대응표본 t-검정, 비정규적인 {wilcoxon_count}개 변수는 Wilcoxon 부호순위 검정을 사용했습니다.",
         f"- 두 팀 값이 경기마다 동일해 대응차이가 없는 변수는 {no_variation_count}개이며, p=1과 효과크기 0으로 기록했습니다.",
         f"- Benjamini-Hochberg FDR 5% 기준으로 {significant_count}개 변수가 승패 집단에서 유의한 차이를 보였습니다.",
@@ -631,11 +639,26 @@ def main() -> None:
 
     configure_style()
     df = pd.read_csv(input_path, parse_dates=["game_date"])
-    missing_columns = [c for c in ["game_id", "team", "season", "game_date", "win", *ANALYSIS_FEATURES] if c not in df]
+    missing_columns = [
+        c
+        for c in [
+            "game_id",
+            "team",
+            "team_code",
+            "franchise_id",
+            "franchise_name",
+            "season",
+            "game_date",
+            "win",
+            *ANALYSIS_FEATURES,
+        ]
+        if c not in df
+    ]
     if missing_columns:
         raise KeyError(f"필수 열이 없습니다: {missing_columns}")
-    if len(df) != 1080 or df["game_id"].nunique() != 540:
-        raise ValueError("예상한 540경기/1,080 팀 행 구조가 아닙니다.")
+    game_count = int(df["game_id"].nunique())
+    if len(df) != game_count * 2:
+        raise ValueError("경기당 정확히 두 개의 팀 행이 필요합니다.")
     if not (df.groupby("game_id")["win"].agg(["sum", "count"]) == [1, 2]).all().all():
         raise ValueError("각 경기에는 승리팀 1개와 총 2개 팀 행이 필요합니다.")
 
@@ -688,6 +711,9 @@ def main() -> None:
         loadings,
         n_80,
         args.rolling_window,
+        game_count,
+        len(df),
+        int(df["season"].nunique()),
     )
 
     print(f"analysis_complete=true")
